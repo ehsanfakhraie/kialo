@@ -1,0 +1,115 @@
+.claim{
+    cursor: pointer;
+    transition: 100ms;
+}
+.claim:hover{
+    opacity: 0.5;
+}
+
+.commentList{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.commentBox{
+    padding: 20px 30% 0;
+    border: 1px solid black;
+    margin: 0 10px 10px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.comment{
+    width: 100%;
+    /*height: 50px;*/
+    display: flex;
+    padding-bottom: 20px;
+    flex-direction: row;
+    margin: 10px;
+    align-self: center;
+    border-bottom: 1px solid cadetblue;
+
+
+}
+
+.sender{
+    align-self: start;
+    width: 20%;
+}
+
+.commentText{
+    align-self: start;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid cadetblue ;
+    border-radius: 20px 20px 20px 0px;
+    background-color: lightgray;
+}
+
+.commentText span{
+    display: inline-block;
+    width: 250px;
+}
+
+.send{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-bottom: 10px;
+    flex: 1;
+    border: 1px solid gray;
+    border-top: 0;
+    border-radius: 0 0 10px 10px;
+    padding-left: 15px;
+}
+
+.VoteBox{
+    /*padding: 20px 20px 20px 20px;*/
+    border: 1px solid black;
+    margin: 0 10px 10px;
+    height: 240px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.VoteList{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.SubVote{
+    height: 35px;
+    /*border: 1px solid black;*/
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.Vote{
+    height: 10px;
+    cursor: pointer;
+    transition: 600ms;
+    margin-bottom: 5px;
+}
+
+.Vote:hover{
+    opacity: 0.5;
+}
+
+.numbers{
+    background-color:white;
+    border-radius:100px;
+    padding:5px;
+    font-size:12px;
+    transition: 200ms;
+}
+
+.numbers:hover{
+    background-color: gray;
+    color: white;
+}
