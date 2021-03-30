@@ -4,8 +4,12 @@ import {ADD_CLAIM_DIALOG, EDIT_DISCUSSION} from "../actions/types";
 const initialState = {
     discussions: [],
     discussionAdded:false,
+    addedId:null,
     haveError:'no',
-    editDiscussion:{'Add new manager':[], 'Add new writer':[], 'Add new editor':[]}
+    editDiscussion:{'Add new manager':[], 'Add new writer':[], 'Add new editor':[]},
+    done:false,
+    informationChanges:{},
+    mes:''
 };
 
 export default function (state = initialState, action) {
@@ -37,6 +41,7 @@ export default function (state = initialState, action) {
                 discussions: [...state.discussions, action.payload],
                 discussionAdding:false,
                 discussionAdded:true,
+                addedId:action.payload.id
             }
         case GET_USER_DISCUSSIONS:
             return{
@@ -50,6 +55,13 @@ export default function (state = initialState, action) {
                 editDiscussion:{...state.editDiscussion,
                     [action.name]: joined
                 }
+            }
+        case 'INFORMATION_DISCUSSION':
+            return {
+                ...state,
+                done: !state.done,
+                informationChanges: action.payload,
+                mes:action.mes
             }
         default:
             return state;

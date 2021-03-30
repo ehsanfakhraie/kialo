@@ -81,6 +81,7 @@ span.cons2{
     font-size: 20px;
     font-weight: 400;
     color: #d85c5c;
+    text-align: right;
 }
 span.norm {
     font-weight: 400;
@@ -113,6 +114,17 @@ span.pros2{
     background:none;
     border: none;
     color: #d85c5c;
+    text-align: center;
+    text-decoration: none;
+    display: inline;
+
+    font-size: 30px;
+    float: right;
+}
+.norm-btn {
+    background:none;
+    border: none;
+    color: #b3bbb7;
     text-align: center;
     text-decoration: none;
     display: inline;

@@ -41,15 +41,12 @@ export const updateClaims=claims=>(dispatch,getState)=>{
 }
 export const getUserClaims = (id) => (dispatch, getState) => {
     axios
-        .get(`${BaseUrl}/api/claims/`,{params: {
-                owner: id
-            }}, getState)
+        .get(`${BaseUrl}/api/userClaims/`, tokenConfig(getState))
         .then(res => {
             dispatch({
                 type: GET_USER_CLAIMS,
-                payload: res.data
+                payload: res.data[0].claims
             });
-            console.log(res.data);
         })
         .catch(err =>
             console.log(err)

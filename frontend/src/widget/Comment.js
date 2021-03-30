@@ -25,8 +25,7 @@ export default class Comment extends React.Component{
             method: 'get',
             url:`${BaseUrl}/api/comments/?claim=${this.props.claimSelect}`,
         });
-        await this.setState({data: a.data})
-        console.log(a)
+        await this.setState({data: a.data});
     }
 
     async sendButton(){
@@ -56,12 +55,12 @@ export default class Comment extends React.Component{
                         return(
                             <div className='comment'>
                                 <div className={'sender'}>
-                                                <span style={{fontSize:12}}>
+                                                <span style={{fontSize:12, textAlign:'right'}}>
                                                     {(data.owner != undefined) ? data.owner.username : null}
                                                 </span>
                                 </div>
                                 <Card className={'commentText'}>
-                                                <span>
+                                                <span style={{textAlign:'right'}}>
                                                     {(data.text != undefined) ? data.text : null}
                                                 </span>
                                 </Card>
@@ -73,11 +72,11 @@ export default class Comment extends React.Component{
                     }):null}
                 </div>
                 {localStorage.getItem('token') != undefined &&
-                <div className={'send'}>
-                    <TextField id="standard-basic" value={this.state.comment} label="comment" multiline={true}
+                    <div className={'send'}>
+                    <TextField id="standard-basic" value={this.state.comment} placeholder="comment" multiline={true}
                                style={{flex: 11}} onChange={(e) => self.setState({comment: e.target.value})}/>
                     <IconButton aria-label="delete" style={{flex: 1, margin: 2}} onClick={() => self.sendButton()}>
-                        <DeleteIcon fontSize="large"/>
+                        <DeleteIcon fontSize="large" style={{transform: 'scaleX(-1)'}}/>
                     </IconButton>
                 </div>
                 }

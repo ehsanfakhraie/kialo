@@ -19,6 +19,7 @@ export default function (state = initialState, action) {
                 selectedClaim:action.payload
             }
         case UPDATE_CLAIMS:
+            console.log('here! you')
             return{
                 ...state,
                 claims:action.payload

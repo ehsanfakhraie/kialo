@@ -43,44 +43,35 @@ class SuggestedList extends React.Component{
         var self = this
         await axios({
             method: 'put',
-            url:`${BaseUrl}/api/updateClaim/${data.id}/`,
+            url:`${BaseUrl}/api/claims/update/status/${data.id}/`,
             headers: {Authorization:'token '+localStorage.getItem('token')},
             data: {accepted:i}
         }).then(async function (response) {
             if(response.data.id != undefined && response.status === 200){
-                console.log('done!')
                 var remove= self.state.data;
                 remove.splice(idx, 1);
-                console.log(self.state.data[1])
                 await self.setState({data: remove, success:(i===0)?'removed':'added', successopen:true})
-                console.log('here!!!')
             }
             else{
                 await self.setState({error: response.data.toString(), erroropen: true})
-                console(response)
             }
         }).catch(async function (error) {
-            console.log(error)
             await self.setState({error: error.toString(), erroropen: true})
         });
 
     }
 
     async suggestFinder(){
-        console.log(this.props.claims);
         var a = await axios({
             method: 'get',
             url:`${BaseUrl}/api/claims/?discussion=${this.props.claims}`,
         });
-        console.log(a)
         var array=[]
         for (let i in a.data){
                 let n= {text: a.data[i]['text'], name:a.data[i]['owner']['username'], type: a.data[i].type, id: a.data[i].id}
                 array= array.concat(n)
-                console.log(n)
         }
         await this.setState({data: array})
-        console.log(this.state.data)
     }
 
 
@@ -159,7 +150,6 @@ class SuggestedList extends React.Component{
 }
 
 const mapStateToProps = ({dialog}) => {
-    console.log('dialog::', dialog)
     return {dialog}
 };
 export default connect(

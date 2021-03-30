@@ -6,12 +6,19 @@ import PropTypes from "prop-types";
 import { login ,logout} from "../actions/auth";
 import { returnErrors } from "../actions/messages";
 import { Container, Row } from "reactstrap";
-import store from '../store';
+import {TextValidator, ValidatorForm} from "react-material-ui-form-validator";
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
+
+function Alert(props) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 export class Login extends Component {
     state = {
         username: "",
-        password: ""
+        password: "",
+        erroropen: false,
     };
 
     static propTypes = {
@@ -26,8 +33,18 @@ export class Login extends Component {
         this.props.login(this.state.username, this.state.password);
     };
 
-    onChange = e => this.setState({ [e.target.name]: e.target.value });
+    handleChange = event => {
+        event.persist();
+        this.setState({
+            [event.target.name]: event.target.value
+        });
+    };
 
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if(this.props.error !== prevProps.error){
+            this.setState({erroropen: true})
+        }
+    }
 
 
     render() {
@@ -46,44 +63,53 @@ export class Login extends Component {
                     <div className="col-md-3"></div>
                     <div className="col-md-6">
                         <div className="card card-body mt-5">
-                            <h2 className="text-center">Login</h2>
-                            <form onSubmit={this.onSubmit}>
+                            <h2 className="text-center">ورود</h2>
+                            <ValidatorForm onSubmit={this.onSubmit}>
                                 <div className="form-group">
-                                    <label>Username</label>
-                                    <input
+                                    <TextValidator
+                                        className="mt-4 mb-16 w-100"
+                                        label="نام کاربری"
+                                        variant='outlined'
+                                        onChange={this.handleChange}
                                         type="text"
-                                        className="form-control"
                                         name="username"
-                                        onChange={this.onChange}
                                         value={username}
+                                        validators={["required"]}
+                                        errorMessages={["این فیلد اجباریست"]}
                                     />
                                 </div>
 
                                 <div className="form-group">
-                                    <label>Password</label>
-                                    <input
-                                        type="password"
-                                        className="form-control"
+                                    <TextValidator
+                                        className="mb-16 w-100"
+                                        label="رمز عبور "
+                                        variant='outlined'
+                                        onChange={this.handleChange}
                                         name="password"
-                                        onChange={this.onChange}
+                                        type="password"
                                         value={password}
+                                        validators={["required"]}
+                                        errorMessages={["این فیلد اجباریست"]}
                                     />
                                 </div>
 
                                 <div className="form-group">
                                     <button type="submit" className="btn btn-primary">
-                                        Login
+                                        ورود
                                     </button>
                                 </div>
-                                <p>
+                                {/* <p>
                                     Don't have an account? <Link to="/register">Register</Link>
-                                </p>
-
-                                <p style={{color:"red"}}>{this.props.error}</p>
-                            </form>
+                                </p> */}
+                            </ValidatorForm>
                         </div>
                     </div>
                     <div className="col-md-3"></div>
+                    <Snackbar open={this.state.erroropen} autoHideDuration={3000} onClose={() => this.setState({erroropen: false})}>
+                        <Alert onClose={() => this.setState({erroropen: false})} severity="error">
+                            یوزر نیم یا پسورد صحیح نمیباشد
+                        </Alert>
+                    </Snackbar>
                 </Row>
             </Container>
 

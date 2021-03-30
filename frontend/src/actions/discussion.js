@@ -111,3 +111,11 @@ export const editDiscussion = (data, name) => {
         name: name
 };
 };
+
+export const InformationDiscussion = (data, mes) => {
+    return {
+        type: 'INFORMATION_DISCUSSION',
+        payload: data,
+        mes: mes
+    };
+};

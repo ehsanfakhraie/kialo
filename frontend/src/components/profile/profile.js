@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import {getUserDiscussions, selectDiscussion} from "../../actions/discussion"
 import {getUserClaims} from "../../actions/claims"
-// import { loadUser } from "../../actions/auth"
-// import DiscussionList from '../../components/discussionList';
 import {
     BrowserRouter as Router,
     Switch,
@@ -10,29 +8,74 @@ import {
     NavLink, useHistory, Redirect
 } from "react-router-dom";
 import { connect } from "react-redux";
-import PropTypes from "prop-types";
-import { Container, Row, Col, Card, CardBody, CardText, CardSubtitle, CardImg, CardTitle, Button, Form } from "reactstrap";
+import PropTypes, {func} from "prop-types";
+import { Container, Row, Col, Card, CardBody, CardText, CardSubtitle, CardImg, CardTitle, Form } from "reactstrap";
 import './profile.css'
 import '../../styles/main-content.scss'
 import ContainerText from '../layout/containertext' 
-import editDiscussion from '../disscussion/editDiscussion';
-import SuggestedList from "../../widget/SuggestedList";
 import {suggestedListrDialog} from "../../actions/diaog";
 import Paper from '@material-ui/core/Paper';
-import { makeStyles } from '@material-ui/core/styles';
+import {withStyles} from '@material-ui/core/styles';
+import Discussions from './Discussions'
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Typography from '@material-ui/core/Typography';
+import Box from '@material-ui/core/Box';
+import Button from '@material-ui/core/Button'
+import UserTeams from "./UserTeams";
+import IconButton from "@material-ui/core/IconButton";
+import AddIcon from '@material-ui/icons/Add';
+import DialogTitle from "@material-ui/core/DialogTitle";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogActions from "@material-ui/core/DialogActions";
+import Dialog from "@material-ui/core/Dialog";
+import TextField from "@material-ui/core/TextField";
+import axios from "axios";
+import {BaseUrl} from "../../BaseUrl";
+import MyClaims from './claims'
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
 
-const useStyles = makeStyles( theme => ({
+function Alert(props) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+
+    return (
+        <Typography
+            component="div"
+            role="tabpanel"
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+            {...other}
+        >
+            {value === index && <Box p={3}>{children}</Box>}
+        </Typography>
+    );
+}
+
+TabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.any.isRequired,
+    value: PropTypes.any.isRequired,
+};
+
+function a11yProps(index) {
+    return {
+        id: `simple-tab-${index}`,
+        'aria-controls': `simple-tabpanel-${index}`,
+    };
+}
+
+const useStyles = theme => ({
     paper: {
-        padding:'20px',
-        display: 'flex',
-        flexWrap: 'wrap',
-        '& > *': {
-          margin: theme.spacing(1),
-          width: theme.spacing(14),
-          height: theme.spacing(16),
-        },
+        margin:20,
     },
-}))
+})
 class Profile extends Component {
 
     static propTypes = {
@@ -47,11 +90,10 @@ class Profile extends Component {
         this.props.selectDiscussion(e)
     }
 
-    handleEditClick(id){
-        this.setState({
-            ...this.state,  toEditDiscussion: id
-        })
-    }
+
+    handleChange = (event, value) => {
+        this.setState({value});
+    };
 
     constructor(props) {
         super(props)
@@ -59,163 +101,154 @@ class Profile extends Component {
             loading: true,
             discussions: [],
             toDiscussion: -1,
-            toEditDiscussion: -1
+            toEditDiscussion: -1,
+            value:0,
+            AddDialog:false,
+            name:'',
+            change:true,
+            successopen: false,
+            erroropen: false,
+            errormes: ''
         }
         this.handleClick = this.handleClick.bind(this);
     }
 
-    async handleSuggehstClick(id){
-        await this.setState({selected: id})
-        console.log(this.state.selected)
-        this.props.suggestedListrDialog()
-    }
-
     componentWillMount() {
-        this.props.getUserDiscussions(this.props.user.id)
+        this.props.getUserDiscussions(this.props.user.id);
         this.props.getUserClaims(this.props.user.id)
     }
 
-    userDiscussions(discussions) {
-        //const text = this.props.discussions.map(discussion => this.renderCard(discussion))
-        const col1 = [];
-        discussions.map(discussion => col1.push(discussion))
-
-        var out = [];
-        for (let i = 0; i < col1.length; i += 3) {
-            if (i + 2 < col1.length)
-                out.push(<Row>
-                    {this.renderCard(col1[i])}
-                    {this.renderCard(col1[i + 1])}
-                    {this.renderCard(col1[i + 2])}
-                </Row>)
-            else if (i + 1 < col1.length)
-                out.push(<Row>
-                    {this.renderCard(col1[i])}
-                    {this.renderCard(col1[i + 1])}
-                </Row>)
-            else
-                out.push(<Row>
-                    {this.renderCard(col1[i])}
-                </Row>)
-            out.push(<br />);
-            out.push(<br />);
-        }
-        return out;
-    }
-
-    userClaims(claims) {
-        //const text = this.props.discussions.map(discussion => this.renderCard(discussion))
-        const col1 = [];
-        claims.map(claim => col1.push(claim))
-
-        var out = [];
-        for (let i = 0; i < col1.length; i += 3) {
-            if (i + 2 < col1.length)
-                out.push(<Row>
-                    {this.renderClaim(col1[i])}
-                    {this.renderClaim(col1[i + 1])}
-                    {this.renderClaim(col1[i + 2])}
-                </Row>)
-            else if (i + 1 < col1.length)
-                out.push(<Row>
-                    {this.renderClaim(col1[i])}
-                    {this.renderClaim(col1[i + 1])}
-                </Row>)
-            else
-                out.push(<Row>
-                    {this.renderClaim(col1[i])}
-                </Row>)
-            out.push(<br />);
-            out.push(<br />);
-        }
-        return out;
-    }
-
-    renderCard(d) {
-        //console.log('DDDD:',d)
-        return (
-            <Card className="shadow border-0" style = {{alignItems:'start',width:'25vw'}} key={d.id}>
-                <div style={{width: '100%', height: '23vw', overflow: 'hidden'}}>
-                    <CardImg style={{height:'100%'}} src={d.photo} alt="Card image cap"/>
-                </div>
-                <CardBody className='align-self-start'>
-                    <h3 className="card-title align-self-start">{d.title}</h3>
-                    <CardSubtitle>Created by: {d.owner.username}</CardSubtitle>
-                    <CardText>{d.text.trim(100)}</CardText>
-                    <Button variant="contained" className="bg-primary text-white w-100" style={{margin:'10px'}} onClick={() => this.handleClick(d.id)}>Info</Button>
-                    <Button onClick={() =>  this.handleEditClick(d.id)} variant="contained" className="text-white w-100" style={{margin:'10px'}}>
-                        edit
-                    </Button>
-                    <Button onClick={() =>  this.handleSuggehstClick(d.id)} variant="contained" className="text-white w-100" style={{margin:'10px'}}>
-                        suggests
-                    </Button>
-                </CardBody>
-            </Card>
-        )
-    }
-
-    renderClaim(c) {
-        var span;
-        if(c.type==0){
-            span=<span className='norm' >Normal</span>
-        }else if(c.type==1){
-            span=<span className='cons2' >Negetive</span>
-        }else if(c.type==2){
-            span=<span className='pros2' >Posetive</span>
-        }
-        console.log('CCCC:',c)
-        return (
-            <Card className="shadow border-0"  key={c.id}>
-                <Col className='column-box'>
-                    {span}
-                    <button className='cons-btn' title="" >
-                    </button>
-                </Col>        
-                <CardBody>
-                <b className="card-title">In Discussion: {c.for_discussion}</b>
-                <CardText>{c.text}</CardText>
-                <Button variant="contained" className="bg-primary text-white" onClick={() => this.handleClick(c.for_discussion)}>Go to discussion</Button>
-                </CardBody>
-            </Card>
-        )
+    async create(){
+        let self = this;
+        let formData = new FormData();
+        formData.append('teamId', self.state.name);
+        await axios({
+            method: 'post',
+            url:`${BaseUrl}/api/teams/`,
+            data:formData,
+            headers: {Authorization:'token '+localStorage.getItem('token')},
+        }).then(function (result) {
+            console.log(result)
+            self.setState({change: !self.state.change, AddDialog: false, successopen:true})
+        }).catch(function (err, response) {
+            console.log(err.response.data.teamId)
+            if(err.response.data.teamId) {
+                self.setState({erroropen: true, errormes: 'این نام تکراریست'})
+            }else {
+                self.setState({erroropen: true, errormes: 'مشکلی رخ داده است'})
+            }
+        })
     }
 
     render() {
-        if (this.state.toDiscussion !== -1) {
-            return <Redirect to={"discussion/" + this.state.toDiscussion + '/'} />
-        }else if(this.state.toEditDiscussion !== -1){
-            return <Redirect to={"edit-discussion/" + this.state.toEditDiscussion + '/'} />
-        }
-        const discussionList = !this.props.loading ? "loading..." : this.userDiscussions(this.props.discussions)
+        const {value} = this.state;
+        const {classes} = this.props
         this.props.userClaims.sort((a, b) => (a.type > b.type) ? 1 : -1)
-        const claimsList = !this.props.loading ? "loading..." : this.userClaims(this.props.userClaims)
-        console.log('USERS:',this.props.user)
+        // const claimsList = !this.props.loading ? "loading..." : this.userClaims(this.props.userClaims)
         return (
             <div className='app-wrapper'>
-                <ContainerText title='Profile'/>
-                <Card className="shadow border-0">
-                    <h5 className='align-self-start'><b>Informations</b></h5>
-                    <span className = 'information'>{this.props.user.username}</span>
-                    <span className = 'information'>my id:{this.props.user.id}</span>
-                    <span className = 'information'>{this.props.user.email}</span>
+                <ContainerText title='پروفایل کاربری'/>
+                <Card className="shadow border-0" >
+                    <h5 className=''><b>اطلاعات شما</b></h5>
+                    <span className = ''></span>
+                    <span className = ''>نام کاربری: {this.props.user.username}</span>
+                    <span className = ''>ایمیل: {this.props.user.email}</span>
                 </Card>
-                <div className = {useStyles.paper} style={{marginRight:'20px',marginLeft:'20px'}}>
+                <div className={classes.paper}>
                     <Paper elevation={3} >
-                    <div className='row justify-content-around col-12'>
-                    <h5 className='align-self-start'><b> Discussions </b></h5>
-                    {discussionList}
+                        <div className='flex-column justify-content-around col-12 d-flex flex-column'>
+                            <h5 className='align-self-start p-3'><b>
+                                بحث های شما</b></h5>
+                            {/* {discussionList} */}
+                            <Discussions history={this.props.history} />
+                        </div>
+                    </Paper>
+                </div>
+                <div className={classes.paper}>
+                    <Paper elevation={3} >
+                        <div className='flex-column justify-content-around col-12 d-flex'>
+                            <div className='align-self-start p-3 flex-row d-flex w-100 justify-content-between'>
+                                <h5 className='align-self-start p-3'><b>
+                                    تیم های من</b></h5>
+                                <IconButton onClick={()=>this.setState({AddDialog:true})}>
+                                    <AddIcon/>
+                                </IconButton>
+                            </div>
+                                <UserTeams change={this.state.change}/>
+                        </div>
+                    </Paper>
+                </div>
+                <div className={classes.paper}>
+                    <Paper elevation={3} >
+                    <div className='flex-column justify-content-around col-12 d-flex flex-column'>
+                {/* <Card className="shadow border-15" style = {{alignItems:'center'}}> */}
+                        <h5 className='align-self-start p-3'><b>ادعاهای شما</b></h5>
+                        <div>
+                            <AppBar position="static">
+                                <Tabs 
+                                value={value} 
+                                onChange={this.handleChange} 
+                                aria-label="simple tabs example">
+                                    <Tab label="خنثی" {...a11yProps(0)} />
+                                    <Tab label="مثبت" {...a11yProps(1)} />
+                                    <Tab label="منفی" {...a11yProps(2)} />
+                                </Tabs>
+                            </AppBar>
+                            <TabPanel value={value} index={0}>
+                                <MyClaims claims={this.props.userClaims} model='خنثی' num={0}/>
+                            </TabPanel>
+                            <TabPanel value={value} index={1}>
+                                <MyClaims claims={this.props.userClaims} model='مثبت' num={1}/>
+                            </TabPanel>
+                            <TabPanel value={value} index={2}>
+                                <MyClaims claims={this.props.userClaims} model='منفی' num={2}/>
+                            </TabPanel>
+                        </div>
+                    {/* {claimsList} */}
+                {/* </Card> */}
                     </div>
                     </Paper>
                 </div>
-                <Card className="shadow border-15" style = {{alignItems:'center'}}>
-                    <h5 className='align-self-start'><b>Claims</b></h5>
-                    {claimsList}
-                </Card>
-                <SuggestedList claims={this.state.selected}/>
+                <Dialog
+                    open={this.state.AddDialog}
+                    onClose={()=>this.setState({AddDialog: false})}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                >
+                    <DialogTitle id="alert-dialog-title">{"اضافه کردن تیم کاربری"}</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText id="alert-dialog-description">
+                            یک نام برای تیم کاربری انتخاب کنید.
+                        </DialogContentText>
+                        <TextField value={this.state.name} id="standard-basic" placeholder="نام" fullWidth multiline onChange={(e)=> this.setState({name: e.target.value})}/>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={()=>this.setState({AddDialog: false})} color="primary">
+                            لغو
+                        </Button>
+                        <Button onClick={()=>this.create()} color="primary" autoFocus>
+                            تایید
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                <Snackbar open={this.state.successopen} autoHideDuration={3000} onClose={() => this.setState({successopen: false})}>
+                    <Alert onClose={() => this.setState({successopen: false})} severity="success">
+                        تیم جدید اضافه شد.
+                    </Alert>
+                </Snackbar>
+                <Snackbar open={this.state.erroropen} autoHideDuration={3000} onClose={() => this.setState({erroropen: false})}>
+                    <Alert onClose={() => this.setState({erroropen: false})} severity="error">
+                        {this.state.errormes}
+                    </Alert>
+                </Snackbar>
             </div>
         );
     }
 }
+
+Profile.propTypes = {
+    classes: PropTypes.object.isRequired,
+};
 
 const mapStateToProps = state => ({
     discussions: state.discussions.discussions,
@@ -229,4 +262,4 @@ const mapStateToProps = state => ({
 export default connect(
     mapStateToProps,
     { getUserDiscussions ,getUserClaims, selectDiscussion, suggestedListrDialog}
-)(Profile);
+)(withStyles(useStyles) (Profile));

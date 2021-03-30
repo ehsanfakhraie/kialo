@@ -4,19 +4,20 @@ import OrgChart from '../../libs/orgchart'
 import { Row, Container, Col } from 'reactstrap';
 
 
-import { addClaim ,selectClaim,updateClaims} from "../../actions/claims";
+import { addClaim, selectClaim, updateClaims } from "../../actions/claims";
 
 import { connect } from "react-redux";
-import PropTypes from "prop-types";
+import PropTypes, { node } from "prop-types";
+import color from '@material-ui/core/colors/amber';
 
 
-
+let orgchart;
 class CChart extends Component {
 
     static propTypes = {
-        claims:PropTypes.array.isRequired,
-        selectClaim:PropTypes.func.isRequired,
-        updateClaims:PropTypes.func.isRequired
+        claims: PropTypes.array.isRequired,
+        selectClaim: PropTypes.func.isRequired,
+        updateClaims: PropTypes.func.isRequired
     };
 
 
@@ -35,59 +36,146 @@ class CChart extends Component {
     render() {
         this.props.updateClaims(data(this.props.discussion.claims))
         return <Container >
-            <div id="chart-container" ref="chart-container" >
+            <div id="chart-container" ref="chart-container" dir='ltr'>
             </div>
         </Container>;
     }
 
 
 
-    componentDidMount() {
-        processChart(this.props.discussion, this)
+    async componentDidMount() {
+        await processChart(this.props.discussion, this)
+
+        const nod = ReactDOM.findDOMNode(this)
+        let node = await nod.getElementsByClassName('node')
+        let flag = true;
+        let nodeId = this.props.selectedClaim;
+        let nodes=[]
+        while(flag){
+            for (let i in node) {
+                if (node[i].id == nodeId) {
+                    var childrenState = orgchart._getNodeState(node[i], 'children');
+                    if(childrenState.exist){
+                        nodes.push(node[i])
+                    }
+                    if (node[i].dataset.parent == undefined) {
+                        flag = false;
+                        break;
+                    }else{
+                        nodeId = node[i].dataset.parent
+                    }
+                }
+            }
+        }
+        nodes.reverse()
+        nodes.forEach(element => {
+            orgchart.showChildren(element)
+        });
 
 
+        for (let i in node) {
+            if (node[i].id == this.props.selectedClaim) {
+                node[i].className = node[i].className + ' focused'
+            }
+        }
+    }
 
-        const nod=ReactDOM.findDOMNode(this)
-        console.log(nod.getElementsByClassName('node'))
-
+    async componentDidUpdate(prevProps, prevState, snapshot) {
+        if (prevProps.selectedClaim !== this.props.selectedClaim) {
+            const nod = ReactDOM.findDOMNode(this)
+            let node = await nod.getElementsByClassName('node')
+            let flag = true;
+            let nodeId = this.props.selectedClaim;
+            let nodes=[]
+            while(flag){
+                
+                for (let i in node) {
+                    if (node[i].id == nodeId) {
+                        var childrenState = orgchart._getNodeState(node[i], 'children');
+                        if(childrenState.exist){
+                            nodes.push(node[i])
+                        }
+                        if (node[i].dataset.parent == undefined) {
+                            flag = false;
+                            break;
+                        }else{
+                            nodeId = node[i].dataset.parent
+                        }
+                    }
+                }
+            }
+            nodes.reverse()
+            nodes.forEach(element => {
+                orgchart.showChildren(element)
+            });
+            for (let i in node) {
+                if (typeof node[i].className === 'string') {
+                    if (node[i].className.search('focused') !== -1) {
+                        node[i].className = node[i].className.replace(' focused', '')
+                    }
+                }
+            }
+            for (let i in node) {
+                if (node[i].id == this.props.selectedClaim) {
+                    let j = i
+                    var counter = 1
+                    while (true) {
+                        // console.log('yooooo', node[j].className)
+                        // break;
+                        if (node[j] != undefined) {
+                            if (node[j].dataset.parent == undefined) {
+                                break
+                            } else {
+                                j = parseInt(node[j].dataset.parent)
+                                counter++
+                            }
+                        } else {
+                            break
+                        }
+                    }
+                    node[i].className = node[i].className + ' focused'
+                }
+            }
+        }
     }
 
 
     handleClick(e) {
-        console.log('sss',e.target)
+
         this.props.selectClaim(parseInt(e.target.id))
     }
 }
 
 function data(claims) {
-    var children = claims.map(claim => ({ 'id': claim.id, 'text': claim.text,
+    var children = claims.map(claim => ({
+        'id': claim.id, 'text': claim.text,
         'className': className(claim.type),
         'parentid': claim.parent,
-        'type':claim.type }));
+        'type': claim.type,
+        'in_reply_to': claim.in_reply_to,
+        'link': claim.link
+    }));
     //var children = claims.map(claim => ({ 'id': claim.id, 'parentid': claim.parent }));
     var tree = unflatten(children);
 
     return unflatten(children)[0]
 }
-function className(type){
-    if(type==1) return "pros"
-    if(type==2) return "cons"
-    if(type==0) return "none"
+function className(type) {
+    if (type == 1) return "pros"
+    if (type == 2) return "cons"
+    if (type == 0) return "none"
 }
 
 
 function processChart(discussion, nodeC) {
-    console.log('hi')
     let datascource = data(discussion.claims)
-        , orgchart = new OrgChart({
+    orgchart = new OrgChart({
         'chartContainer': '#chart-container',
         'data': datascource,
         'depth': 2,
         'parentNodeSymbol': null, 'toggleSiblingsResp': false,
         'createNode': function (node, data) {
-            console.log(data.id,datascource)
-            node.addEventListener('click',nodeC.handleClick)
-
+            node.addEventListener('click', nodeC.handleClick)
         }
     });
 
@@ -150,7 +238,7 @@ function sortNodesAndChildren(nodes) {
     })
     nodes.forEach(function (node) {
         try {
-            if (node.children.length!=0) {
+            if (node.children.length != 0) {
                 sortNodesAndChildren(node.children);
             }
         }
@@ -165,13 +253,13 @@ function sortNodesAndChildren(nodes) {
 
 
 const mapStateToProps = state => ({
-    selectedClaim:state.claims.selectedClaim
+    selectedClaim: state.claims.selectedClaim
 });
 
 
 export default connect(
     mapStateToProps,
-    { addClaim ,selectClaim,updateClaims}
+    { addClaim, selectClaim, updateClaims }
 )(CChart);
 
 //export default CChart

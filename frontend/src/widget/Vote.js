@@ -12,7 +12,7 @@ export default class Vote extends React.Component{
     constructor() {
         super();
         this.state={
-            data:{0:10, 1:15, 2:9, 3:20, 4:5, 5:17, total:77},
+            data:{0:0, 1:0, 2:0, 3:0, 4:0, 5:0, total:0},
             size:0,
             color:{ 1:'#cfcfcf', 2:'#9e9e9e', 3:'#6e6e6e', 4:'#3d3d3d', 5:'#1e1e1e'},
             numbers:[1,2,3,4,5],
